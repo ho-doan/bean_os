@@ -4,9 +4,9 @@
     "method": "GET",
     "statusCode": 200,
     "data": {
-      "id": "${req['queryParameters']['id']}",
-      "title": "Chat ${req['queryParameters']['id']}",
-      "lastMessage": "Detail loaded from assets/api_mocks."
+      "id": "${req.queryParameters.id}",
+      "title": "Chat ${req.queryParameters.id}",
+      "lastMessage": "Chat detail"
     }
   }
 ]

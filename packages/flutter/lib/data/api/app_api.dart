@@ -11,9 +11,6 @@ part 'app_api.g.dart';
 abstract class AppApi {
   factory AppApi(Dio dio, {String baseUrl}) = _AppApi;
 
-  /// Base URL must match [createAppDio] so [MockInterceptor] sees paths like `/chats`.
-  static const String base = 'https://api.example';
-
   @GET('/profile')
   Future<ProfileModel> getProfile(@Query('id') String profileId);
 

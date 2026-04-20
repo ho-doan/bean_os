@@ -3,17 +3,12 @@
     "path": "/contacts",
     "method": "GET",
     "statusCode": 200,
-    "data": [
-      { "id": "0", "name": "Contact 0" },
-      { "id": "1", "name": "Contact 1" },
-      { "id": "2", "name": "Contact 2" },
-      { "id": "3", "name": "Contact 3" },
-      { "id": "4", "name": "Contact 4" },
-      { "id": "5", "name": "Contact 5" },
-      { "id": "6", "name": "Contact 6" },
-      { "id": "7", "name": "Contact 7" },
-      { "id": "8", "name": "Contact 8" },
-      { "id": "9", "name": "Contact 9" }
-    ]
+    "template": {
+      "size": 5,
+      "content": {
+        "id": "${index}",
+        "name": "Contact ${index}"
+      }
+    }
   }
 ]

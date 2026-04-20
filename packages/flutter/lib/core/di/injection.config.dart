@@ -14,23 +14,37 @@ import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 
 import '../../data/api/app_api.dart' as _i715;
+import '../../data/api/pos_api.dart' as _i567;
 import '../../data/datasources/app_local_data_source.dart' as _i1002;
 import '../../data/datasources/app_remote_data_source.dart' as _i230;
+import '../../data/datasources/pos_remote_data_source.dart' as _i151;
 import '../../data/local/app_database.dart' as _i293;
 import '../../data/repositories/auth_repository_impl.dart' as _i895;
 import '../../data/repositories/chats_repository_impl.dart' as _i238;
 import '../../data/repositories/contacts_repository_impl.dart' as _i399;
+import '../../data/repositories/pos_repository_impl.dart' as _i214;
 import '../../data/repositories/profile_repository_impl.dart' as _i813;
 import '../../domain/repositories/auth_repository.dart' as _i1073;
 import '../../domain/repositories/chats_repository.dart' as _i685;
 import '../../domain/repositories/contacts_repository.dart' as _i219;
+import '../../domain/repositories/pos_repository.dart' as _i373;
 import '../../domain/repositories/profile_repository.dart' as _i47;
+import '../../domain/usecases/create_order_usecase.dart' as _i1052;
+import '../../domain/usecases/create_payment_usecase.dart' as _i225;
+import '../../domain/usecases/get_active_orders_usecase.dart' as _i278;
 import '../../domain/usecases/get_chat_usecase.dart' as _i254;
 import '../../domain/usecases/get_chats_usecase.dart' as _i345;
 import '../../domain/usecases/get_contact_usecase.dart' as _i1021;
 import '../../domain/usecases/get_contacts_usecase.dart' as _i237;
+import '../../domain/usecases/get_daily_report_usecase.dart' as _i578;
+import '../../domain/usecases/get_kitchen_queue_usecase.dart' as _i48;
+import '../../domain/usecases/get_menu_usecase.dart' as _i568;
 import '../../domain/usecases/get_profile_usecase.dart' as _i749;
+import '../../domain/usecases/get_tables_usecase.dart' as _i41;
+import '../../domain/usecases/get_top_items_usecase.dart' as _i453;
 import '../../domain/usecases/login_usecase.dart' as _i253;
+import '../../domain/usecases/mark_kitchen_done_usecase.dart' as _i225;
+import '../../domain/usecases/void_payment_usecase.dart' as _i1019;
 import '../../presentation/bloc/auth/login_bloc.dart' as _i539;
 import '../../presentation/bloc/chat_detail/chat_detail_bloc.dart' as _i42;
 import '../../presentation/bloc/chats/chats_bloc.dart' as _i829;
@@ -55,6 +69,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i1073.AuthRepository>(() => _i895.AuthRepositoryImpl());
     gh.lazySingleton<_i715.AppApi>(
       () => registerModule.appApi(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i567.PosApi>(
+      () => registerModule.posApi(gh<_i361.Dio>()),
     );
     gh.lazySingleton<_i230.AppRemoteDataSource>(
       () => _i230.AppRemoteDataSourceImpl(gh<_i715.AppApi>()),
@@ -89,6 +106,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i1002.AppLocalDataSource>(),
       ),
     );
+    gh.lazySingleton<_i151.PosRemoteDataSource>(
+      () => _i151.PosRemoteDataSourceImpl(gh<_i567.PosApi>()),
+    );
     gh.factory<_i539.LoginBloc>(
       () => _i539.LoginBloc(gh<_i253.LoginUseCase>()),
     );
@@ -107,6 +127,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i829.ChatsBloc>(
       () => _i829.ChatsBloc(gh<_i345.GetChatsUseCase>()),
     );
+    gh.lazySingleton<_i373.PosRepository>(
+      () => _i214.PosRepositoryImpl(
+        gh<_i151.PosRemoteDataSource>(),
+        gh<_i1002.AppLocalDataSource>(),
+      ),
+    );
     gh.factory<_i897.ContactsBloc>(
       () => _i897.ContactsBloc(gh<_i237.GetContactsUseCase>()),
     );
@@ -120,6 +146,36 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factoryParam<_i585.ContactDetailBloc, String, dynamic>(
       (contactId, _) =>
           _i585.ContactDetailBloc(gh<_i1021.GetContactUseCase>(), contactId),
+    );
+    gh.lazySingleton<_i1052.CreateOrderUseCase>(
+      () => _i1052.CreateOrderUseCase(gh<_i373.PosRepository>()),
+    );
+    gh.lazySingleton<_i225.CreatePaymentUseCase>(
+      () => _i225.CreatePaymentUseCase(gh<_i373.PosRepository>()),
+    );
+    gh.lazySingleton<_i278.GetActiveOrdersUseCase>(
+      () => _i278.GetActiveOrdersUseCase(gh<_i373.PosRepository>()),
+    );
+    gh.lazySingleton<_i578.GetDailyReportUseCase>(
+      () => _i578.GetDailyReportUseCase(gh<_i373.PosRepository>()),
+    );
+    gh.lazySingleton<_i48.GetKitchenQueueUseCase>(
+      () => _i48.GetKitchenQueueUseCase(gh<_i373.PosRepository>()),
+    );
+    gh.lazySingleton<_i568.GetMenuUseCase>(
+      () => _i568.GetMenuUseCase(gh<_i373.PosRepository>()),
+    );
+    gh.lazySingleton<_i41.GetTablesUseCase>(
+      () => _i41.GetTablesUseCase(gh<_i373.PosRepository>()),
+    );
+    gh.lazySingleton<_i453.GetTopItemsUseCase>(
+      () => _i453.GetTopItemsUseCase(gh<_i373.PosRepository>()),
+    );
+    gh.lazySingleton<_i225.MarkKitchenDoneUseCase>(
+      () => _i225.MarkKitchenDoneUseCase(gh<_i373.PosRepository>()),
+    );
+    gh.lazySingleton<_i1019.VoidPaymentUseCase>(
+      () => _i1019.VoidPaymentUseCase(gh<_i373.PosRepository>()),
     );
     return this;
   }

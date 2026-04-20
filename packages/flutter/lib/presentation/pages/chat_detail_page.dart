@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/di/injection.dart';
-import '../bloc/chat_detail/chat_detail_bloc.dart';
+import '../riverpod/chats_provider.dart';
 
-class ChatDetailPage extends StatelessWidget {
+class ChatDetailPage extends ConsumerWidget {
   const ChatDetailPage({
     super.key,
     required this.chatId,
@@ -15,50 +14,40 @@ class ChatDetailPage extends StatelessWidget {
   final void Function(String chatId) onOpenSettings;
 
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create:
-          (_) =>
-              sl<ChatDetailBloc>(param1: chatId, param2: null)
-                ..add(const ChatDetailEvent.started()),
-      child: BlocBuilder<ChatDetailBloc, ChatDetailState>(
-        builder: (context, state) {
-          return Scaffold(
-            appBar: AppBar(
-              title: Text('Chat $chatId'),
-              actions: [
-                IconButton(
-                  onPressed: () => onOpenSettings(chatId),
-                  icon: const Icon(Icons.settings),
-                ),
-              ],
-            ),
-            body: Center(
-              child: switch (state.status) {
-                ChatDetailStatus.initial => const CircularProgressIndicator(),
-                ChatDetailStatus.loading => const CircularProgressIndicator(),
-                ChatDetailStatus.failure => Text(
-                  state.errorMessage ?? 'Error',
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-                ChatDetailStatus.success => Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      state.chat?.title ?? '',
-                      style: Theme.of(context).textTheme.titleLarge,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final chatState = ref.watch(chatDetailProvider(chatId));
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Chat $chatId'),
+        actions: [
+          IconButton(
+            onPressed: () => onOpenSettings(chatId),
+            icon: const Icon(Icons.settings),
+          ),
+        ],
+      ),
+      body: Center(
+        child: chatState.when(
+          loading: () => const CircularProgressIndicator(),
+          error:
+              (error, _) => Text(
+                error.toString(),
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+          data:
+              (chat) => Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(chat.title, style: Theme.of(context).textTheme.titleLarge),
+                  if (chat.lastMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(chat.lastMessage!),
                     ),
-                    if (state.chat?.lastMessage != null)
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Text(state.chat!.lastMessage!),
-                      ),
-                  ],
-                ),
-              },
-            ),
-          );
-        },
+                ],
+              ),
+        ),
       ),
     );
   }

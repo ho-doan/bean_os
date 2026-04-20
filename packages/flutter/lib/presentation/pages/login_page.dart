@@ -1,21 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/di/injection.dart';
-import '../bloc/auth/login_bloc.dart';
+import '../riverpod/auth_provider.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key, required this.onLoginSuccess});
 
   final VoidCallback onLoginSuccess;
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   final _email = TextEditingController(text: 'demo@example.com');
   final _password = TextEditingController(text: 'password');
+
+  @override
+  void initState() {
+    super.initState();
+    ref.listenManual<AsyncValue<void>>(loginControllerProvider, (previous, next) {
+      if ((previous?.isLoading ?? false) && next.hasValue) {
+        widget.onLoginSuccess();
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -26,84 +35,60 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<LoginBloc>(),
-      child: BlocListener<LoginBloc, LoginState>(
-        listenWhen:
-            (prev, curr) =>
-                prev.status != LoginStatus.success &&
-                curr.status == LoginStatus.success,
-        listener: (context, state) => widget.onLoginSuccess(),
-        child: Scaffold(
-          body: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 360),
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: BlocBuilder<LoginBloc, LoginState>(
-                  builder: (context, state) {
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Login',
-                          style: Theme.of(context).textTheme.headlineSmall,
-                        ),
-                        const SizedBox(height: 24),
-                        TextField(
-                          controller: _email,
-                          decoration: const InputDecoration(
-                            labelText: 'Email',
-                          ),
-                          keyboardType: TextInputType.emailAddress,
-                        ),
-                        const SizedBox(height: 12),
-                        TextField(
-                          controller: _password,
-                          decoration: const InputDecoration(
-                            labelText: 'Password',
-                          ),
-                          obscureText: true,
-                        ),
-                        if (state.status == LoginStatus.failure &&
-                            state.errorMessage != null) ...[
-                          const SizedBox(height: 12),
-                          Text(
-                            state.errorMessage!,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.error,
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 24),
-                        FilledButton(
-                          onPressed:
-                              state.status == LoginStatus.submitting
-                                  ? null
-                                  : () {
-                                    context.read<LoginBloc>().add(
-                                      LoginEvent.submitted(
-                                        email: _email.text.trim(),
-                                        password: _password.text,
-                                      ),
-                                    );
-                                  },
-                          child:
-                              state.status == LoginStatus.submitting
-                                  ? const SizedBox(
-                                    width: 22,
-                                    height: 22,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                  : const Text('Sign in'),
-                        ),
-                      ],
-                    );
-                  },
+    final loginState = ref.watch(loginControllerProvider);
+
+    return Scaffold(
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 360),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Login', style: Theme.of(context).textTheme.headlineSmall),
+                const SizedBox(height: 24),
+                TextField(
+                  controller: _email,
+                  decoration: const InputDecoration(labelText: 'Email'),
+                  keyboardType: TextInputType.emailAddress,
                 ),
-              ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _password,
+                  decoration: const InputDecoration(labelText: 'Password'),
+                  obscureText: true,
+                ),
+                if (loginState.hasError) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    loginState.error.toString(),
+                    style: TextStyle(color: Theme.of(context).colorScheme.error),
+                  ),
+                ],
+                const SizedBox(height: 24),
+                FilledButton(
+                  onPressed:
+                      loginState.isLoading
+                          ? null
+                          : () {
+                            ref
+                                .read(loginControllerProvider.notifier)
+                                .submit(
+                                  email: _email.text.trim(),
+                                  password: _password.text,
+                                );
+                          },
+                  child:
+                      loginState.isLoading
+                          ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                          : const Text('Sign in'),
+                ),
+              ],
             ),
           ),
         ),

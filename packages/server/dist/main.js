@@ -1,10 +1,29 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const common_1 = require("@nestjs/common");
 const core_1 = require("@nestjs/core");
+const swagger_1 = require("@nestjs/swagger");
 const app_module_1 = require("./app.module");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
-    await app.listen(process.env.PORT ?? 3000);
+    app.enableCors({ origin: true });
+    app.useGlobalPipes(new common_1.ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+    }));
+    const swaggerConfig = new swagger_1.DocumentBuilder()
+        .setTitle('Bean OS API')
+        .setDescription('MVP backend: orders, tables, menu, kitchen (REST + Socket.IO `/kitchen`), payments, reports, JWT auth. Database: MySQL qua driver **mysql2**.')
+        .setVersion('1.0')
+        .addBearerAuth()
+        .build();
+    const document = swagger_1.SwaggerModule.createDocument(app, swaggerConfig);
+    swagger_1.SwaggerModule.setup('swagger', app, document);
+    const port = Number(process.env.PORT ?? 3000);
+    console.log(`Server is running on port http://localhost:${port}/swagger`);
+    await app.listen(port);
 }
-bootstrap();
+void bootstrap();
 //# sourceMappingURL=main.js.map

@@ -24,17 +24,6 @@ class MainLayout extends StatelessWidget {
               children: [
                 Expanded(child: navigationShell),
                 BottomNavigationBar(
-                  backgroundColor: Theme.of(context).colorScheme.surface,
-                  selectedItemColor: Theme.of(context).colorScheme.primary,
-                  unselectedItemColor: Theme.of(context).colorScheme.onSurface,
-                  selectedLabelStyle: Theme.of(context).textTheme.bodyMedium,
-                  unselectedLabelStyle: Theme.of(context).textTheme.bodyMedium,
-                  selectedIconTheme: IconThemeData(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  unselectedIconTheme: IconThemeData(
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
                   currentIndex: navigationShell.currentIndex,
                   onTap:
                       (index) => navigationShell.goBranch(
@@ -43,20 +32,20 @@ class MainLayout extends StatelessWidget {
                       ),
                   items: const [
                     BottomNavigationBarItem(
-                      icon: Icon(Icons.person),
-                      label: 'Profile',
+                      icon: Icon(Icons.point_of_sale),
+                      label: 'Order',
                     ),
                     BottomNavigationBarItem(
-                      icon: Icon(Icons.chat),
-                      label: 'Chats',
+                      icon: Icon(Icons.soup_kitchen),
+                      label: 'Kitchen',
                     ),
                     BottomNavigationBarItem(
-                      icon: Icon(Icons.contacts),
-                      label: 'Contacts',
+                      icon: Icon(Icons.payments),
+                      label: 'Cashier',
                     ),
                     BottomNavigationBarItem(
-                      icon: Icon(Icons.settings),
-                      label: 'Settings',
+                      icon: Icon(Icons.bar_chart),
+                      label: 'Reports',
                     ),
                   ],
                 ),
@@ -75,20 +64,20 @@ class MainLayout extends StatelessWidget {
                 labelType: NavigationRailLabelType.all,
                 destinations: const [
                   NavigationRailDestination(
-                    icon: Icon(Icons.person),
-                    label: Text('Profile'),
+                    icon: Icon(Icons.point_of_sale),
+                    label: Text('Order'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(Icons.chat),
-                    label: Text('Chats'),
+                    icon: Icon(Icons.soup_kitchen),
+                    label: Text('Kitchen'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(Icons.contacts),
-                    label: Text('Contacts'),
+                    icon: Icon(Icons.payments),
+                    label: Text('Cashier'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(Icons.settings),
-                    label: Text('Settings'),
+                    icon: Icon(Icons.bar_chart),
+                    label: Text('Reports'),
                   ),
                 ],
               ),

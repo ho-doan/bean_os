@@ -1,0 +1,11 @@
+[
+  {
+    "path": "/contact",
+    "method": "GET",
+    "statusCode": 200,
+    "data": {
+      "id": "${req['queryParameters']['id']}",
+      "name": "Contact ${req['queryParameters']['id']}"
+    }
+  }
+]

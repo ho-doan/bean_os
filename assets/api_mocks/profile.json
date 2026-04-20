@@ -1,0 +1,12 @@
+[
+  {
+    "path": "/profile",
+    "method": "GET",
+    "statusCode": 200,
+    "data": {
+      "id": "${req['queryParameters']['id']}",
+      "name": "User ${req['queryParameters']['id']}",
+      "bio": "Profile from assets/api_mocks (dio_mock_interceptor schema + Retrofit)."
+    }
+  }
+]

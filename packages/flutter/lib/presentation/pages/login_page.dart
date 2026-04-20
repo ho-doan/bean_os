@@ -13,13 +13,16 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
-  final _email = TextEditingController(text: 'demo@example.com');
-  final _password = TextEditingController(text: 'password');
+  final _email = TextEditingController(text: 'admin');
+  final _password = TextEditingController(text: 'admin123');
 
   @override
   void initState() {
     super.initState();
-    ref.listenManual<AsyncValue<void>>(loginControllerProvider, (previous, next) {
+    ref.listenManual<AsyncValue<void>>(loginControllerProvider, (
+      previous,
+      next,
+    ) {
       if ((previous?.isLoading ?? false) && next.hasValue) {
         widget.onLoginSuccess();
       }
@@ -63,30 +66,30 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   const SizedBox(height: 12),
                   Text(
                     loginState.error.toString(),
-                    style: TextStyle(color: Theme.of(context).colorScheme.error),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                   ),
                 ],
                 const SizedBox(height: 24),
                 FilledButton(
-                  onPressed:
-                      loginState.isLoading
-                          ? null
-                          : () {
-                            ref
-                                .read(loginControllerProvider.notifier)
-                                .submit(
-                                  email: _email.text.trim(),
-                                  password: _password.text,
-                                );
-                          },
-                  child:
-                      loginState.isLoading
-                          ? const SizedBox(
-                            width: 22,
-                            height: 22,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                          : const Text('Sign in'),
+                  onPressed: loginState.isLoading
+                      ? null
+                      : () {
+                          ref
+                              .read(loginControllerProvider.notifier)
+                              .submit(
+                                email: _email.text.trim(),
+                                password: _password.text,
+                              );
+                        },
+                  child: loginState.isLoading
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Sign in'),
                 ),
               ],
             ),

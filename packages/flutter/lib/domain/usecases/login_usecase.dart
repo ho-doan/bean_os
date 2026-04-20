@@ -8,6 +8,6 @@ class LoginUseCase {
 
   final AuthRepository _repository;
 
-  Future<void> call(String email, String password) =>
+  Future<String> call(String email, String password) =>
       _repository.login(email, password);
 }

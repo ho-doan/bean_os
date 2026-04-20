@@ -11,6 +11,12 @@ import '../models/profile_model.dart';
 
 /// Đọc/ghi cache cục bộ (Drift) cho dữ liệu đồng bộ từ API.
 abstract class AppLocalDataSource {
+  Future<void> saveAccessToken(String token);
+
+  Future<String?> readAccessToken();
+
+  Future<void> clearAccessToken();
+
   Future<void> cacheProfile(ProfileModel model);
 
   Future<ProfileModel?> readProfile(String id);
@@ -48,8 +54,19 @@ class AppLocalDataSourceImpl implements AppLocalDataSource {
 
   static const String _kKitchenQueueKey = 'pos.kitchen.queue';
   static const String _kActiveOrdersKey = 'pos.orders.active';
+  static const String _kAccessTokenKey = 'auth.access.token';
 
   DateTime get _now => DateTime.now();
+
+  @override
+  Future<void> saveAccessToken(String token) =>
+      _db.upsertKv(_kAccessTokenKey, token);
+
+  @override
+  Future<String?> readAccessToken() => _db.getKv(_kAccessTokenKey);
+
+  @override
+  Future<void> clearAccessToken() => _db.deleteKv(_kAccessTokenKey);
 
   @override
   Future<void> cacheProfile(ProfileModel model) async {

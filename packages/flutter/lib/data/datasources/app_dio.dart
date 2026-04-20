@@ -1,9 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:example/core/env/env.dart';
 
-/// Dio + JSON mocks: same route schema as [dio_mock_interceptor](https://pub.dev/packages/dio_mock_interceptor),
-/// loaded from `assets/api_mocks/` (explicit paths; works in `flutter test`).
-Dio createAppDio() {
+import 'auth_interceptor.dart';
+
+Dio createAppDio({
+  String? Function()? readAccessToken,
+  Future<void> Function()? onUnauthorized,
+}) {
   final dio = Dio(
     BaseOptions(
       baseUrl: Env.apiUrl,
@@ -11,6 +14,11 @@ Dio createAppDio() {
       receiveTimeout: const Duration(seconds: 30),
     ),
   );
-  // dio.interceptors.add(AssetApiMocksInterceptor());
+  dio.interceptors.add(
+    AuthInterceptor(
+      readAccessToken: readAccessToken ?? () => null,
+      onUnauthorized: onUnauthorized,
+    ),
+  );
   return dio;
 }

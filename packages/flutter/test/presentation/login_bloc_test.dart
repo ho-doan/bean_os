@@ -19,7 +19,7 @@ void main() {
   });
 
   test('submitted: submitting then success', () async {
-    when(() => mockUseCase(any(), any())).thenAnswer((_) async {});
+    when(() => mockUseCase(any(), any())).thenAnswer((_) async => 'token-123');
 
     final bloc = LoginBloc(mockUseCase);
     addTearDown(bloc.close);

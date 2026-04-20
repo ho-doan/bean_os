@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/di/injection.dart';
 import 'core/routers/router.dart';
+import 'presentation/riverpod/auth_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   configureDependencies();
+  await hydrateAuthStateFromStorage();
   runApp(const ProviderScope(child: MyApp()));
 }
 

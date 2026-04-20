@@ -96,4 +96,8 @@ class AppDatabase extends _$AppDatabase {
         .getSingleOrNull();
     return row?.value;
   }
+
+  Future<void> deleteKv(String key) async {
+    await (delete(appKvEntries)..where((t) => t.key.equals(key))).go();
+  }
 }

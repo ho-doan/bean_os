@@ -66,7 +66,6 @@ extension GetItInjectableX on _i174.GetIt {
     final registerModule = _$RegisterModule();
     gh.lazySingleton<_i361.Dio>(() => registerModule.dio);
     gh.lazySingleton<_i293.AppDatabase>(() => _i293.AppDatabase());
-    gh.lazySingleton<_i1073.AuthRepository>(() => _i895.AuthRepositoryImpl());
     gh.lazySingleton<_i715.AppApi>(
       () => registerModule.appApi(gh<_i361.Dio>()),
     );
@@ -76,8 +75,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i230.AppRemoteDataSource>(
       () => _i230.AppRemoteDataSourceImpl(gh<_i715.AppApi>()),
     );
-    gh.lazySingleton<_i253.LoginUseCase>(
-      () => _i253.LoginUseCase(gh<_i1073.AuthRepository>()),
+    gh.lazySingleton<_i1073.AuthRepository>(
+      () => _i895.AuthRepositoryImpl(gh<_i715.AppApi>()),
     );
     gh.lazySingleton<_i1002.AppLocalDataSource>(
       () => _i1002.AppLocalDataSourceImpl(gh<_i293.AppDatabase>()),
@@ -109,9 +108,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i151.PosRemoteDataSource>(
       () => _i151.PosRemoteDataSourceImpl(gh<_i567.PosApi>()),
     );
-    gh.factory<_i539.LoginBloc>(
-      () => _i539.LoginBloc(gh<_i253.LoginUseCase>()),
-    );
     gh.lazySingleton<_i749.GetProfileUseCase>(
       () => _i749.GetProfileUseCase(gh<_i47.ProfileRepository>()),
     );
@@ -123,6 +119,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i237.GetContactsUseCase>(
       () => _i237.GetContactsUseCase(gh<_i219.ContactsRepository>()),
+    );
+    gh.lazySingleton<_i253.LoginUseCase>(
+      () => _i253.LoginUseCase(gh<_i1073.AuthRepository>()),
     );
     gh.factory<_i829.ChatsBloc>(
       () => _i829.ChatsBloc(gh<_i345.GetChatsUseCase>()),
@@ -142,6 +141,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factoryParam<_i980.ProfileDetailBloc, String, dynamic>(
       (profileId, _) =>
           _i980.ProfileDetailBloc(gh<_i749.GetProfileUseCase>(), profileId),
+    );
+    gh.factory<_i539.LoginBloc>(
+      () => _i539.LoginBloc(gh<_i253.LoginUseCase>()),
     );
     gh.factoryParam<_i585.ContactDetailBloc, String, dynamic>(
       (contactId, _) =>

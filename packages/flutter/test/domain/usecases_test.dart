@@ -64,9 +64,12 @@ void main() {
   group('LoginUseCase', () {
     test('delegates to repository', () async {
       final repo = MockAuthRepository();
-      when(() => repo.login('a@b.c', 'secret')).thenAnswer((_) async {});
+      when(
+        () => repo.login('a@b.c', 'secret'),
+      ).thenAnswer((_) async => 'token-123');
       final useCase = LoginUseCase(repo);
-      await useCase('a@b.c', 'secret');
+      final token = await useCase('a@b.c', 'secret');
+      expect(token, 'token-123');
       verify(() => repo.login('a@b.c', 'secret')).called(1);
     });
   });

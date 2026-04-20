@@ -8,6 +8,7 @@ import '../../presentation/pages/login_page.dart';
 import '../../presentation/pages/order_page.dart';
 import '../../presentation/pages/register_page.dart';
 import '../../presentation/pages/reports_page.dart';
+import '../../presentation/riverpod/auth_provider.dart';
 import '../../presentation/shell/main_layout.dart';
 
 part 'router.g.dart';
@@ -121,11 +122,25 @@ final navigatorKey = GlobalKey<NavigatorState>();
 final router = GoRouter(
   navigatorKey: navigatorKey,
   routes: $appRoutes,
-  refreshListenable: ,
+  refreshListenable: authStateListenable,
   redirect: (context, state) {
+    final isAuthenticated = authStateListenable.value;
+    final isAuthRoute =
+        state.matchedLocation == _P.login ||
+        state.matchedLocation.startsWith('/login/');
+
     if (state.matchedLocation == _P.root) {
+      return isAuthenticated ? OrdersRoute().location : LoginRoute().location;
+    }
+
+    if (!isAuthenticated && !isAuthRoute) {
+      return LoginRoute().location;
+    }
+
+    if (isAuthenticated && isAuthRoute) {
       return OrdersRoute().location;
     }
+
     return null;
   },
   errorBuilder:

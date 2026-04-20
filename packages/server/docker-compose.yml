@@ -1,0 +1,29 @@
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: bean_os
+      MYSQL_USER: bean
+      MYSQL_PASSWORD: bean
+    ports:
+      - '3306:3306'
+    volumes:
+      - bean_os_mysql_data:/var/lib/mysql
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: bean
+      PMA_PASSWORD: bean
+    ports:
+      - '8080:80'
+
+volumes:
+  bean_os_mysql_data:

@@ -1,10 +1,12 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { WsAdapter } from '@nestjs/platform-ws';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.useWebSocketAdapter(new WsAdapter(app));
   app.enableCors({ origin: true });
 
   app.useGlobalPipes(
@@ -19,7 +21,7 @@ async function bootstrap() {
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Bean OS API')
     .setDescription(
-      'MVP backend: orders, tables, menu, kitchen (REST + Socket.IO `/kitchen`), payments, reports, JWT auth. Database: MySQL qua driver **mysql2**.',
+      'MVP backend: orders, tables, menu, kitchen (REST + native WebSocket `ws://…/kitchen`), payments, reports, JWT auth. Database: MySQL qua driver **mysql2**.',
     )
     .setVersion('1.0')
     .addBearerAuth()

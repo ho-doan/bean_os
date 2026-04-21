@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:example/core/env/env.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,6 +17,13 @@ import '../../domain/usecases/get_menu_usecase.dart';
 import '../../domain/usecases/get_tables_usecase.dart';
 import '../../domain/usecases/get_top_items_usecase.dart';
 import '../../domain/usecases/mark_kitchen_done_usecase.dart';
+
+/// Cùng host/path với REST; `http`→`ws`, `https`→`wss` (hợp Flutter web / mobile).
+Uri _kitchenWebSocketUri() {
+  final u = Uri.parse(Env.apiUrl).resolve('/kitchen');
+  final scheme = u.scheme == 'https' ? 'wss' : 'ws';
+  return u.replace(scheme: scheme);
+}
 
 final _getTablesUseCaseProvider = Provider<GetTablesUseCase>(
   (ref) => sl<GetTablesUseCase>(),
@@ -124,14 +132,24 @@ final kitchenQueueProvider = FutureProvider.autoDispose<List<OrderEntity>>(
   (ref) => ref.read(_getKitchenQueueUseCaseProvider)(),
 );
 
+/// Server gửi text JSON: `{ "event": "order.new" | "order.updated", "data": ... }`.
 final kitchenRealtimeTickProvider = StreamProvider.autoDispose<int>((
   ref,
 ) async* {
   try {
-    final channel = WebSocketChannel.connect(Uri.parse('${Env.wsUrl}/kitchen'));
+    final channel = WebSocketChannel.connect(_kitchenWebSocketUri());
     ref.onDispose(channel.sink.close);
-    await for (final _ in channel.stream) {
-      yield DateTime.now().millisecondsSinceEpoch;
+    await for (final raw in channel.stream) {
+      if (raw is! String) continue;
+      try {
+        final map = jsonDecode(raw) as Map<String, dynamic>;
+        final event = map['event'] as String?;
+        if (event == 'order.new' || event == 'order.updated') {
+          yield DateTime.now().millisecondsSinceEpoch;
+        }
+      } catch (_) {
+        // Bỏ qua frame không phải JSON (ping, …).
+      }
     }
   } catch (_) {
     while (true) {

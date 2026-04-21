@@ -51,10 +51,10 @@ npm run lint
 - `ValidationPipe` toàn cục: `whitelist`, `forbidNonWhitelisted`, `class-validator` trên DTO.
 - Hầu hết route yêu cầu header `Authorization: Bearer <token>` (JWT). Ngoại lệ `@Public()`: `GET /`, `POST /auth/login`.
 
-## Socket.IO (bếp / thu ngân)
+## WebSocket (bếp / thu ngân)
 
-- Namespace: **`/kitchen`**
-- Events: `order.new` (đơn mới), `order.updated` (đổi trạng thái / thanh toán / void).
+- Path: **`ws://<host>:<port>/kitchen`** (production: `wss://…`)
+- Frame: text JSON `{"event":"order.new"|"order.updated","data":{...}}` (tương thích Flutter web `WebSocketChannel`).
 
 ## API tóm tắt (MVP)
 

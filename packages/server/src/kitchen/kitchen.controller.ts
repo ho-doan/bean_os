@@ -17,7 +17,7 @@ export class KitchenController {
   @ApiOperation({
     summary: 'Hàng đợi bếp (REST bootstrap)',
     description:
-      'Trả pending + preparing. Realtime qua Socket.IO namespace `/kitchen`, events `order.new`, `order.updated`.',
+      'Trả pending + preparing. Realtime qua WebSocket path `/kitchen` (JSON `{ event, data }`), events `order.new`, `order.updated`.',
   })
   @ApiOkResponse({ description: 'Danh sách order cho bếp' })
   getQueue() {

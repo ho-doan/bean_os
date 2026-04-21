@@ -28,7 +28,7 @@ export class OrdersController {
   @ApiOperation({
     summary: 'Tạo đơn',
     description:
-      'Body: tableId + items (menuItemId, qty, note). Emit WebSocket `order.new` tới namespace /kitchen.',
+      'Body: tableId + items (menuItemId, qty, note). Emit JSON WebSocket `order.new` tới path `/kitchen`.',
   })
   @ApiCreatedResponse({ description: 'Đơn mới kèm line items và bàn' })
   create(@Body() createOrderDto: CreateOrderDto) {

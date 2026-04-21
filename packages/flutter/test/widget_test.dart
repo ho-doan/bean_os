@@ -1,5 +1,6 @@
 import 'package:example/core/di/injection.dart';
 import 'package:example/main.dart';
+import 'package:example/presentation/riverpod/auth_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -10,6 +11,7 @@ void main() {
   testWidgets('MVP shell renders with role tabs', (tester) async {
     await GetIt.instance.reset();
     configureDependencies();
+    authStateListenable.value = true;
 
     await tester.pumpWidget(const ProviderScope(child: MyApp()));
     await tester.pump();

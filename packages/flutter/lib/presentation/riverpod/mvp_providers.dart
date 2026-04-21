@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:example/core/env/env.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -16,24 +17,33 @@ import '../../domain/usecases/get_tables_usecase.dart';
 import '../../domain/usecases/get_top_items_usecase.dart';
 import '../../domain/usecases/mark_kitchen_done_usecase.dart';
 
-final _getTablesUseCaseProvider =
-    Provider<GetTablesUseCase>((ref) => sl<GetTablesUseCase>());
-final _getMenuUseCaseProvider =
-    Provider<GetMenuUseCase>((ref) => sl<GetMenuUseCase>());
-final _createOrderUseCaseProvider =
-    Provider<CreateOrderUseCase>((ref) => sl<CreateOrderUseCase>());
-final _getKitchenQueueUseCaseProvider =
-    Provider<GetKitchenQueueUseCase>((ref) => sl<GetKitchenQueueUseCase>());
-final _markKitchenDoneUseCaseProvider =
-    Provider<MarkKitchenDoneUseCase>((ref) => sl<MarkKitchenDoneUseCase>());
-final _getActiveOrdersUseCaseProvider =
-    Provider<GetActiveOrdersUseCase>((ref) => sl<GetActiveOrdersUseCase>());
-final _createPaymentUseCaseProvider =
-    Provider<CreatePaymentUseCase>((ref) => sl<CreatePaymentUseCase>());
-final _getDailyReportUseCaseProvider =
-    Provider<GetDailyReportUseCase>((ref) => sl<GetDailyReportUseCase>());
-final _getTopItemsUseCaseProvider =
-    Provider<GetTopItemsUseCase>((ref) => sl<GetTopItemsUseCase>());
+final _getTablesUseCaseProvider = Provider<GetTablesUseCase>(
+  (ref) => sl<GetTablesUseCase>(),
+);
+final _getMenuUseCaseProvider = Provider<GetMenuUseCase>(
+  (ref) => sl<GetMenuUseCase>(),
+);
+final _createOrderUseCaseProvider = Provider<CreateOrderUseCase>(
+  (ref) => sl<CreateOrderUseCase>(),
+);
+final _getKitchenQueueUseCaseProvider = Provider<GetKitchenQueueUseCase>(
+  (ref) => sl<GetKitchenQueueUseCase>(),
+);
+final _markKitchenDoneUseCaseProvider = Provider<MarkKitchenDoneUseCase>(
+  (ref) => sl<MarkKitchenDoneUseCase>(),
+);
+final _getActiveOrdersUseCaseProvider = Provider<GetActiveOrdersUseCase>(
+  (ref) => sl<GetActiveOrdersUseCase>(),
+);
+final _createPaymentUseCaseProvider = Provider<CreatePaymentUseCase>(
+  (ref) => sl<CreatePaymentUseCase>(),
+);
+final _getDailyReportUseCaseProvider = Provider<GetDailyReportUseCase>(
+  (ref) => sl<GetDailyReportUseCase>(),
+);
+final _getTopItemsUseCaseProvider = Provider<GetTopItemsUseCase>(
+  (ref) => sl<GetTopItemsUseCase>(),
+);
 
 final tablesProvider = FutureProvider.autoDispose<List<TableEntity>>(
   (ref) => ref.read(_getTablesUseCaseProvider)(),
@@ -93,7 +103,10 @@ class SendOrderController extends AutoDisposeAsyncNotifier<OrderEntity?> {
       final items = optimisticCart.entries
           .map((e) => CreateOrderLineInput(menuItemId: e.key, qty: e.value))
           .toList();
-      return ref.read(_createOrderUseCaseProvider)(tableId: tableId, items: items);
+      return ref.read(_createOrderUseCaseProvider)(
+        tableId: tableId,
+        items: items,
+      );
     });
 
     if (state.hasError) {
@@ -111,14 +124,11 @@ final kitchenQueueProvider = FutureProvider.autoDispose<List<OrderEntity>>(
   (ref) => ref.read(_getKitchenQueueUseCaseProvider)(),
 );
 
-final kitchenRealtimeTickProvider = StreamProvider.autoDispose<int>((ref) async* {
-  const wsBase = String.fromEnvironment(
-    'KITCHEN_WS',
-    defaultValue: 'ws://localhost:3000',
-  );
-
+final kitchenRealtimeTickProvider = StreamProvider.autoDispose<int>((
+  ref,
+) async* {
   try {
-    final channel = WebSocketChannel.connect(Uri.parse('$wsBase/kitchen'));
+    final channel = WebSocketChannel.connect(Uri.parse('${Env.wsUrl}/kitchen'));
     ref.onDispose(channel.sink.close);
     await for (final _ in channel.stream) {
       yield DateTime.now().millisecondsSinceEpoch;
@@ -170,21 +180,25 @@ class CashierActionController
 }
 
 final cashierActionControllerProvider =
-    AutoDisposeAsyncNotifierProvider<CashierActionController, PaymentResultEntity?>(
-      CashierActionController.new,
-    );
+    AutoDisposeAsyncNotifierProvider<
+      CashierActionController,
+      PaymentResultEntity?
+    >(CashierActionController.new);
 
 final todayProvider = StateProvider<String>(
   (ref) => DateTime.now().toIso8601String().substring(0, 10),
 );
 
-final dailyReportProvider = FutureProvider.autoDispose<DailyReportEntity>((ref) {
+final dailyReportProvider = FutureProvider.autoDispose<DailyReportEntity>((
+  ref,
+) {
   final date = ref.watch(todayProvider);
   return ref.read(_getDailyReportUseCaseProvider)(date);
 });
 
-final topItemsReportProvider =
-    FutureProvider.autoDispose<List<TopItemEntity>>((ref) {
-      final date = ref.watch(todayProvider);
-      return ref.read(_getTopItemsUseCaseProvider)(date: date, limit: 10);
-    });
+final topItemsReportProvider = FutureProvider.autoDispose<List<TopItemEntity>>((
+  ref,
+) {
+  final date = ref.watch(todayProvider);
+  return ref.read(_getTopItemsUseCaseProvider)(date: date, limit: 10);
+});

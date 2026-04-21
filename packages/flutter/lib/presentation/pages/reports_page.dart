@@ -13,28 +13,60 @@ class ReportsPage extends ConsumerWidget {
     final items = ref.watch(topItemsReportProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Reports')),
+      appBar: AppBar(
+        title: const Text('Analytics'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(28),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Tong quan doanh thu va mon ban chay',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Row(
-            children: [
-              Expanded(child: Text('Ngay bao cao: $date')),
-              TextButton(
+          Card(
+            child: ListTile(
+              title: const Text('Ngay bao cao'),
+              subtitle: Text(date),
+              trailing: FilledButton.tonalIcon(
                 onPressed: () {
                   ref.invalidate(dailyReportProvider);
                   ref.invalidate(topItemsReportProvider);
                 },
-                child: const Text('Refresh'),
+                icon: const Icon(Icons.refresh),
+                label: const Text('Refresh'),
               ),
-            ],
+            ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           daily.when(
-            loading: () => const SizedBox.shrink(),
-            error: (e, _) => Text('Loi report daily: $e'),
+            loading: () => const Card(
+              child: Padding(
+                padding: EdgeInsets.all(20),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ),
+            error: (e, _) => Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text('Loi report daily: $e'),
+              ),
+            ),
             data: (d) => Card(
               child: ListTile(
+                leading: const CircleAvatar(
+                  child: Icon(Icons.trending_up),
+                ),
                 title: const Text('Doanh thu ngay'),
                 subtitle: Text(
                   'Tong: ${d.totalRevenue.toStringAsFixed(0)} VND | So don: ${d.orderCount}',
@@ -46,18 +78,21 @@ class ReportsPage extends ConsumerWidget {
           Text('Top mon', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           items.when(
-            loading: () => const SizedBox.shrink(),
+            loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, _) => Text('Loi report items: $e'),
-            data: (rows) => Column(
-              children: rows
-                  .map(
-                    (e) => ListTile(
-                      dense: true,
-                      title: Text(e.name),
-                      trailing: Text('x${e.qtySold}'),
-                    ),
-                  )
-                  .toList(),
+            data: (rows) => Card(
+              child: Column(
+                children: rows
+                    .map(
+                      (e) => ListTile(
+                        dense: true,
+                        leading: const Icon(Icons.restaurant_menu),
+                        title: Text(e.name),
+                        trailing: Text('x${e.qtySold}'),
+                      ),
+                    )
+                    .toList(),
+              ),
             ),
           ),
         ],

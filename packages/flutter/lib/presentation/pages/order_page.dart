@@ -9,6 +9,7 @@ class OrderPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(kitchenRealtimeTickProvider);
     final tables = ref.watch(tablesProvider);
     final menu = ref.watch(menuProvider);
     final cart = ref.watch(orderCartProvider);
@@ -27,6 +28,9 @@ class OrderPage extends ConsumerWidget {
         );
       }
     });
+    ref.listen(kitchenRealtimeTickProvider, (_, __) {
+      ref.invalidate(tablesProvider);
+    });
 
     final menuById = {
       for (final item in menu.valueOrNull ?? <MenuItemEntity>[]) item.id: item,
@@ -37,7 +41,24 @@ class OrderPage extends ConsumerWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Order / Phuc vu')),
+      appBar: AppBar(
+        title: const Text('Fresh Order'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(28),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Chon ban va mon theo phong cach Grocery',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
       body: Column(
         children: [
           Padding(
@@ -53,6 +74,13 @@ class OrderPage extends ConsumerWidget {
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: ChoiceChip(
+                          avatar: Icon(
+                            Icons.table_restaurant_outlined,
+                            size: 16,
+                            color: selectedTable == t.id
+                                ? Theme.of(context).colorScheme.primary
+                                : Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
                           label: Text('${t.label} (${t.status})'),
                           selected: selectedTable == t.id,
                           onSelected: t.isFree || selectedTable == t.id
@@ -70,57 +98,71 @@ class OrderPage extends ConsumerWidget {
           ),
           Expanded(
             child: menu.when(
-              loading: () => const SizedBox.shrink(),
+              loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Center(child: Text('Tai menu that bai: $e')),
               data: (items) {
                 final available = items.where((e) => e.isAvailable).toList();
+                if (available.isEmpty) {
+                  return const Center(child: Text('Menu trong'));
+                }
                 return GridView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 12,
-                    childAspectRatio: 2.4,
+                    childAspectRatio: 1.45,
                   ),
                   itemCount: available.length,
                   itemBuilder: (context, index) {
                     final item = available[index];
                     final qty = cart[item.id] ?? 0;
                     return Card(
+                      clipBehavior: Clip.antiAlias,
                       child: Padding(
                         padding: const EdgeInsets.all(12),
-                        child: Row(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    item.name,
-                                    style:
-                                        Theme.of(context).textTheme.titleMedium,
-                                  ),
-                                  Text('${item.price.toStringAsFixed(0)} VND'),
-                                ],
-                              ),
+                            Text(
+                              item.name,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.titleMedium,
                             ),
-                            IconButton(
-                              onPressed: qty > 0
-                                  ? () =>
-                                      ref
+                            const SizedBox(height: 4),
+                            Text(
+                              '${item.price.toStringAsFixed(0)} VND',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                            const Spacer(),
+                            Row(
+                              children: [
+                                IconButton.filledTonal(
+                                  onPressed: qty > 0
+                                      ? () => ref
                                           .read(orderCartProvider.notifier)
                                           .decrease(item.id)
-                                  : null,
-                              icon: const Icon(Icons.remove_circle_outline),
-                            ),
-                            Text('$qty', style: const TextStyle(fontSize: 18)),
-                            IconButton(
-                              onPressed: () =>
-                                  ref
+                                      : null,
+                                  icon: const Icon(Icons.remove),
+                                ),
+                                Expanded(
+                                  child: Center(
+                                    child: Text(
+                                      '$qty',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium,
+                                    ),
+                                  ),
+                                ),
+                                IconButton.filled(
+                                  onPressed: () => ref
                                       .read(orderCartProvider.notifier)
                                       .increase(item.id),
-                              icon: const Icon(Icons.add_circle_outline),
+                                  icon: const Icon(Icons.add),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -139,16 +181,24 @@ class OrderPage extends ConsumerWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: Text(
-                    'Mon: ${cart.values.fold<int>(0, (a, b) => a + b)} | Tong: ${total.toStringAsFixed(0)} VND',
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('So mon: ${cart.values.fold<int>(0, (a, b) => a + b)}'),
+                      Text(
+                        'Tong tam tinh: ${total.toStringAsFixed(0)} VND',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ],
                   ),
                 ),
-                FilledButton(
+                FilledButton.icon(
                   onPressed: sending.isLoading
                       ? null
                       : () =>
                           ref.read(sendOrderControllerProvider.notifier).sendOrder(),
-                  child: sending.isLoading
+                  icon: const Icon(Icons.send_rounded),
+                  label: sending.isLoading
                       ? const SizedBox(
                           width: 16,
                           height: 16,

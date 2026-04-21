@@ -25,11 +25,19 @@ class MainLayout extends StatelessWidget {
                 Expanded(child: navigationShell),
                 BottomNavigationBar(
                   currentIndex: navigationShell.currentIndex,
-                  onTap:
-                      (index) => navigationShell.goBranch(
-                        index,
-                        initialLocation: index == navigationShell.currentIndex,
-                      ),
+                  onTap: (index) => navigationShell.goBranch(
+                    index,
+                    initialLocation: index == navigationShell.currentIndex,
+                  ),
+                  type: BottomNavigationBarType.fixed,
+                  backgroundColor: Colors.white,
+                  selectedItemColor: Theme.of(context).colorScheme.primary,
+                  unselectedItemColor: Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant,
+                  selectedLabelStyle: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                  ),
                   items: const [
                     BottomNavigationBarItem(
                       icon: Icon(Icons.point_of_sale),
@@ -55,12 +63,12 @@ class MainLayout extends StatelessWidget {
           return Row(
             children: [
               NavigationRail(
+                backgroundColor: Colors.white,
                 selectedIndex: navigationShell.currentIndex,
-                onDestinationSelected:
-                    (index) => navigationShell.goBranch(
-                      index,
-                      initialLocation: index == navigationShell.currentIndex,
-                    ),
+                onDestinationSelected: (index) => navigationShell.goBranch(
+                  index,
+                  initialLocation: index == navigationShell.currentIndex,
+                ),
                 labelType: NavigationRailLabelType.all,
                 destinations: const [
                   NavigationRailDestination(

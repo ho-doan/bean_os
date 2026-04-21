@@ -20,5 +20,14 @@ Dio createAppDio({
       onUnauthorized: onUnauthorized,
     ),
   );
+  dio.interceptors.add(
+    LogInterceptor(
+      requestBody: true,
+      responseBody: true,
+      error: true,
+      requestHeader: true,
+      responseHeader: true,
+    ),
+  );
   return dio;
 }

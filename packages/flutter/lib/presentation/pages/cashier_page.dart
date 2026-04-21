@@ -31,9 +31,9 @@ class CashierPage extends ConsumerWidget {
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Cashier / Thu ngan')),
+      appBar: AppBar(title: const Text('Cashier')),
       body: orders.when(
-        loading: () => const SizedBox.shrink(),
+        loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Tai don active that bai: $e')),
         data: (rows) {
           if (rows.isEmpty) {
@@ -44,9 +44,6 @@ class CashierPage extends ConsumerWidget {
             itemCount: rows.length,
             itemBuilder: (context, index) {
               final order = rows[index];
-              final amountController = TextEditingController(
-                text: order.total > 0 ? order.total.toStringAsFixed(0) : '0',
-              );
               return Card(
                 child: Padding(
                   padding: const EdgeInsets.all(12),
@@ -56,34 +53,36 @@ class CashierPage extends ConsumerWidget {
                       Text('Don #${order.id} | Ban ${order.tableId} | ${order.status}'),
                       const SizedBox(height: 6),
                       Text('Tong tam tinh: ${order.total.toStringAsFixed(0)} VND'),
-                      const SizedBox(height: 6),
-                      TextField(
-                        controller: amountController,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Tien khach dua',
-                          isDense: true,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: FilledButton(
-                          onPressed: payment.isLoading
-                              ? null
-                              : () {
-                                  final amount =
-                                      double.tryParse(
-                                        amountController.text.trim(),
-                                      ) ??
-                                      0;
-                                  ref
-                                      .read(cashierActionControllerProvider
-                                          .notifier)
-                                      .payCash(orderId: order.id, amount: amount);
-                                },
-                          child: const Text('Thanh toan cash'),
-                        ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        alignment: WrapAlignment.end,
+                        children: [
+                          OutlinedButton(
+                            onPressed: payment.isLoading
+                                ? null
+                                : () => ref
+                                    .read(cashierActionControllerProvider.notifier)
+                                    .payCash(
+                                      orderId: order.id,
+                                      amount: order.total,
+                                    ),
+                            child: const Text('Thu dung tien'),
+                          ),
+                          FilledButton.icon(
+                            onPressed: payment.isLoading
+                                ? null
+                                : () => ref
+                                    .read(cashierActionControllerProvider.notifier)
+                                    .payCash(
+                                      orderId: order.id,
+                                      amount: order.total + 50000,
+                                    ),
+                            icon: const Icon(Icons.payments_outlined),
+                            label: const Text('Thu +50.000'),
+                          ),
+                        ],
                       ),
                     ],
                   ),

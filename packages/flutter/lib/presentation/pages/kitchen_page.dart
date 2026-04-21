@@ -35,9 +35,9 @@ class KitchenPage extends ConsumerWidget {
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Kitchen / Man hinh bep')),
+      appBar: AppBar(title: const Text('Kitchen')),
       body: queue.when(
-        loading: () => const SizedBox.shrink(),
+        loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Tai queue that bai: $e')),
         data: (orders) {
           if (orders.isEmpty) {
@@ -62,9 +62,11 @@ class KitchenPage extends ConsumerWidget {
                       .done(order.id);
                   return false;
                 },
-                child: Container(
+                child: Card(
                   color: _statusColor(order.status),
-                  padding: const EdgeInsets.all(16),
+                  margin: EdgeInsets.zero,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -107,22 +109,28 @@ class KitchenPage extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: FilledButton(
-                          onPressed: action.isLoading
-                              ? null
-                              : () =>
-                                  ref
-                                      .read(kitchenActionControllerProvider
-                                          .notifier)
-                                      .done(order.id),
-                          child: const Text('Xong'),
-                        ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Chip(
+                            label: Text(order.status.toUpperCase()),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                          const Spacer(),
+                          FilledButton.icon(
+                            onPressed: action.isLoading
+                                ? null
+                                : () => ref
+                                    .read(kitchenActionControllerProvider.notifier)
+                                    .done(order.id),
+                            icon: const Icon(Icons.check),
+                            label: const Text('Xong'),
+                          ),
+                        ],
                       ),
                     ],
                   ),
+                        ),
                 ),
               );
             },

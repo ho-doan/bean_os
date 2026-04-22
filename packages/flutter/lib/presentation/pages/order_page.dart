@@ -7,12 +7,34 @@ import '../riverpod/mvp_providers.dart';
 class OrderPage extends ConsumerWidget {
   const OrderPage({super.key});
 
+  Future<void> _pickOptionsAndIncrease(
+    BuildContext context,
+    WidgetRef ref,
+    MenuItemEntity item,
+  ) async {
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => _ItemOptionsSheet(item: item),
+    );
+    if (!context.mounted) return;
+    if (selected != null && selected.isNotEmpty) {
+      final current = ref.read(selectedOptionsByMenuProvider);
+      ref.read(selectedOptionsByMenuProvider.notifier).state = {
+        ...current,
+        item.id: selected,
+      };
+    }
+    ref.read(orderCartProvider.notifier).increase(item.id);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(kitchenRealtimeTickProvider);
     final tables = ref.watch(tablesProvider);
     final menu = ref.watch(menuProvider);
     final cart = ref.watch(orderCartProvider);
+    final selectedOptions = ref.watch(selectedOptionsByMenuProvider);
     final selectedTable = ref.watch(selectedTableProvider);
     final sending = ref.watch(sendOrderControllerProvider);
 
@@ -135,6 +157,15 @@ class OrderPage extends ConsumerWidget {
                               '${item.price.toStringAsFixed(0)} VND',
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
+                            if ((selectedOptions[item.id] ?? '').isNotEmpty) ...[
+                              const SizedBox(height: 6),
+                              Text(
+                                selectedOptions[item.id]!,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
                             const Spacer(),
                             Row(
                               children: [
@@ -157,9 +188,11 @@ class OrderPage extends ConsumerWidget {
                                   ),
                                 ),
                                 IconButton.filled(
-                                  onPressed: () => ref
-                                      .read(orderCartProvider.notifier)
-                                      .increase(item.id),
+                                  onPressed: () => _pickOptionsAndIncrease(
+                                    context,
+                                    ref,
+                                    item,
+                                  ),
                                   icon: const Icon(Icons.add),
                                 ),
                               ],
@@ -207,6 +240,92 @@ class OrderPage extends ConsumerWidget {
                       : const Text('Gui bep'),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ItemOptionsSheet extends StatefulWidget {
+  const _ItemOptionsSheet({required this.item});
+
+  final MenuItemEntity item;
+
+  @override
+  State<_ItemOptionsSheet> createState() => _ItemOptionsSheetState();
+}
+
+class _ItemOptionsSheetState extends State<_ItemOptionsSheet> {
+  late Map<String, String> _selectedByKey;
+
+  List<MenuItemOptionEntity> get _availableOptions =>
+      (widget.item.options ?? <MenuItemOptionEntity>[])
+          .where((e) => e.values.isNotEmpty)
+          .toList();
+
+  String _buildNote() {
+    final parts = <String>[];
+    for (final option in _availableOptions) {
+      final selected = _selectedByKey[option.key];
+      if (selected == null || selected.isEmpty) continue;
+      parts.add('${option.label} $selected');
+    }
+    return parts.join(', ');
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedByKey = <String, String>{
+      for (final option in _availableOptions) option.key: option.values.first,
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(widget.item.name, style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 12),
+          if (_availableOptions.isEmpty)
+            Text(
+              'Mon nay khong co tuy chon them.',
+              style: Theme.of(context).textTheme.bodyMedium,
+            )
+          else
+            ..._availableOptions.expand((option) {
+              return <Widget>[
+                Text(option.label, style: Theme.of(context).textTheme.titleSmall),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: option.values
+                      .map(
+                        (value) => ChoiceChip(
+                          label: Text(value),
+                          selected: _selectedByKey[option.key] == value,
+                          onSelected: (_) => setState(
+                            () => _selectedByKey[option.key] = value,
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
+                const SizedBox(height: 12),
+              ];
+            }),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: () => Navigator.of(context).pop(_buildNote()),
+              child: const Text('Them vao don'),
             ),
           ),
         ],

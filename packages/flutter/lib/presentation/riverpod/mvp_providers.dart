@@ -91,6 +91,9 @@ final orderCartProvider =
     );
 
 final selectedTableProvider = StateProvider<int?>((ref) => null);
+final selectedOptionsByMenuProvider = StateProvider<Map<int, String>>(
+  (ref) => <int, String>{},
+);
 
 class SendOrderController extends AutoDisposeAsyncNotifier<OrderEntity?> {
   @override
@@ -99,17 +102,26 @@ class SendOrderController extends AutoDisposeAsyncNotifier<OrderEntity?> {
   Future<void> sendOrder() async {
     final tableId = ref.read(selectedTableProvider);
     final cart = ref.read(orderCartProvider);
+    final optionsByMenu = ref.read(selectedOptionsByMenuProvider);
     if (tableId == null || cart.isEmpty) {
       return;
     }
 
     final optimisticCart = Map<int, int>.from(cart);
+    final optimisticOptions = Map<int, String>.from(optionsByMenu);
     ref.read(orderCartProvider.notifier).clear();
+    ref.read(selectedOptionsByMenuProvider.notifier).state = <int, String>{};
     state = const AsyncLoading();
 
     state = await AsyncValue.guard(() async {
       final items = optimisticCart.entries
-          .map((e) => CreateOrderLineInput(menuItemId: e.key, qty: e.value))
+          .map(
+            (e) => CreateOrderLineInput(
+              menuItemId: e.key,
+              qty: e.value,
+              note: optimisticOptions[e.key],
+            ),
+          )
           .toList();
       return ref.read(_createOrderUseCaseProvider)(
         tableId: tableId,
@@ -119,6 +131,7 @@ class SendOrderController extends AutoDisposeAsyncNotifier<OrderEntity?> {
 
     if (state.hasError) {
       ref.read(orderCartProvider.notifier).restore(optimisticCart);
+      ref.read(selectedOptionsByMenuProvider.notifier).state = optimisticOptions;
     }
   }
 }

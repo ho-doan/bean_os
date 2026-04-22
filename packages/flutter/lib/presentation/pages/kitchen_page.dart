@@ -94,15 +94,24 @@ class KitchenPage extends ConsumerWidget {
                                 ),
                               ),
                               if (i.note != null && i.note!.isNotEmpty)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 2,
-                                  ),
-                                  color: Colors.yellow,
-                                  child: Text(
-                                    i.note!,
-                                    style: const TextStyle(fontSize: 18),
+                                Flexible(
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.yellow.shade100,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        i.note!,
+                                        textAlign: TextAlign.right,
+                                        style: const TextStyle(fontSize: 15),
+                                      ),
+                                    ),
                                   ),
                                 ),
                             ],

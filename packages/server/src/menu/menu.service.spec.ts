@@ -2,6 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { MenuItem } from '../database/entities/menu-item.entity';
+import { MenuItemOption } from '../database/entities/menu-item-option.entity';
 import { MenuService } from './menu.service';
 
 describe('MenuService', () => {
@@ -14,6 +15,9 @@ describe('MenuService', () => {
     remove: jest.fn(),
     create: jest.fn((v: unknown) => v),
   };
+  const optionsRepo = {
+    create: jest.fn((v: unknown) => v),
+  };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -22,6 +26,7 @@ describe('MenuService', () => {
       providers: [
         MenuService,
         { provide: getRepositoryToken(MenuItem), useValue: repo },
+        { provide: getRepositoryToken(MenuItemOption), useValue: optionsRepo },
       ],
     }).compile();
 

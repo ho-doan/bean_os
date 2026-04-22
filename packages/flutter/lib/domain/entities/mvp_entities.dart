@@ -1,5 +1,20 @@
 import 'package:equatable/equatable.dart';
 
+class MenuItemOptionEntity extends Equatable {
+  const MenuItemOptionEntity({
+    required this.key,
+    required this.label,
+    required this.values,
+  });
+
+  final String key;
+  final String label;
+  final List<String> values;
+
+  @override
+  List<Object?> get props => [key, label, values];
+}
+
 class TableEntity extends Equatable {
   const TableEntity({required this.id, required this.label, required this.status});
   final int id;
@@ -17,14 +32,16 @@ class MenuItemEntity extends Equatable {
     required this.price,
     required this.isAvailable,
     this.description,
+    this.options,
   });
   final int id;
   final String name;
   final double price;
   final bool isAvailable;
   final String? description;
+  final List<MenuItemOptionEntity>? options;
   @override
-  List<Object?> get props => [id, name, price, isAvailable, description];
+  List<Object?> get props => [id, name, price, isAvailable, description, options];
 }
 
 class OrderLineEntity extends Equatable {
